@@ -76,6 +76,7 @@
         } else {
             //exception?
         }
+        return this
     };
 
     $.fn.assetsUpdate = function (fn) {
@@ -98,7 +99,7 @@
         if (arguments.length > 0) {
             return $(this).bind("imageUpdate", fn);
         } else {
-            $(this).attr("src", $(this).attr("src" + "?" + (new Date().getTime())))
+            return $(this).attr("src", $(this).attr("src" + "?" + (new Date().getTime())))
         }
     };
 
