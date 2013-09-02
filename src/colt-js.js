@@ -15,11 +15,10 @@
             cssUpdated = [];// todo: наполнить
             functionsUpdated = [];// todo: наполнить
 
-            $(window).trigger("liveUpdate")// any update
+            $(window).trigger("liveUpdate");
 
             if (isCode) {
-                $(window).trigger("codeUpdate")//if code]
-                //разослать событие для отдельных функций
+                $(window).trigger("codeUpdate");
                 for (var i = 0; i < fnListeners.length; i++) {
                     if (fnListeners[i][0] == fnUpdated) {
                         fnListeners[i][1].call(fnUpdated);
@@ -27,10 +26,9 @@
                 }
             } else {
                 $(window).trigger("assetsUpdate")// assets code
-                if (img) {
-                    $(window).trigger("imageUpdate")//if image
-                } else {
-                    $(window).trigger("cssUpdate")//if css
+                if (isImg) {
+                    $(window).trigger("imageUpdate");
+                    $(window).trigger("cssUpdate");
                 }
             }
         });
