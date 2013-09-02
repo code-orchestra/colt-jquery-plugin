@@ -1,88 +1,105 @@
-/*
- Предлагается отслеживать изменения ассетов, css, кода через jquery синтаксис
+(function ($) {
 
- {code}
- $(window).liveUpdate(function(e){
- // любое событие COLT
- })
+    var assetsUpdated = [];
+    var cssUpdated = [];
+    var functionsUpdated = [];
 
- $(window).assetUpdate(function(e){
- // обновление всех ассетов в window
- $(window).assetUpdate(); //обновить все ассеты в window
- })
+    if (LiveCodingUtil) {
+        LiveCodingUtil.addListener("onLiveCodeUpdate", function (e) {
+            var isCode;
+            var isImg;
+            var isCss;
+            var fnUpdated;
 
- $("#my-img").assetUpdate(function(e){
- // обновление конкретного IMG
- $(this).assetUpdate(); // обновить только этот IMG
- })
+            assetsUpdated = [];// todo: наполнить
+            cssUpdated = [];// todo: наполнить
+            functionsUpdated = [];// todo: наполнить
 
- $(window).codeUpdate(function(e){
- //обновление функций
- })
+            $(window).trigger("liveUpdate")// any update
 
- $(fnRef).codeUpdate(function(e){
-     //обновление конкретной функции
- })
-
- $(window).cssUpdate(function(e){
- // обновление css в документе или в файле
- $(window).cssUpdate(); // обновить все стили
- })
-
- {code}
-
- */
-
-(function( $ ) {
-
-    if(LiveCodingUtil){
-        LiveCodingUtil.addListener("onLiveCodeUpdate", function(e){
-            // должен получить ссылку на функцию(и) которые обновились
-            // должен найти подписчиков на конкретно эту функцию и разослать событие $(fn).trigger("codeUpdate")
-
-            $(window).trigger("liveUpdate")// if code
-            $(window).trigger("assetUpdate")// assets code
-            $(window).trigger("cssUpdate")//if css
-            $(window).trigger("imgUpdate")//if css
-            $(window).trigger("codeUpdate")//if code
+            if (isCode) {
+                $(window).trigger("codeUpdate")//if code]
+                //разослать событие для отдельных функций
+                for (var i = 0; i < fnListeners.length; i++) {
+                    if (fnListeners[i][0] == fnUpdated) {
+                        fnListeners[i][1].call(fnUpdated);
+                    }
+                }
+            } else {
+                $(window).trigger("assetsUpdate")// assets code
+                if (img) {
+                    $(window).trigger("imageUpdate")//if image
+                } else {
+                    $(window).trigger("cssUpdate")//if css
+                }
+            }
         });
     }
 
-    var update = function(domain, options){
-
+    var update = function (domain) {
+        if (assetsUpdated.length) {
+            $("img").each(function () {
+                var src = $(this).attr("src");
+                if (assetsUpdated.indexOf(src) != -1) {
+                    $(this).assetsUpdate();
+                }
+            });
+        }
+        if (cssUpdated.length) {
+            for(var i=0; i< cssUpdated.length;i++){
+                $("<link/>", {
+                    rel: "stylesheet",
+                    type: "text/css",
+                    href: cssUpdated[i]
+                }).appendTo("head");
+            }
+        }
+        return domain;
     }
 
-    $.fn.liveUpdate = function(fn) {
-        if(arguments.length > 0){
+    var fnListeners = [];
+
+    $.fn.liveUpdate = function (fn) {
+        if (arguments.length > 0) {
             return $(window).bind("liveUpdate", fn);
-        }else{
-            return update(window, {code: true, css:true, img: true})
+        } else {
+            return update(window);
         }
     };
 
-    $.fn.codeUpdate = function(fn) {
-        if(this != window) return $(window).codeUpdate(fn);
-        if(arguments.length > 0){
+    $.fn.codeUpdate = function (fn) {
+        if (arguments.length > 0) {
+            if (typeof this == "function") {
+                fnListeners.push([this, fn])
+            }
             return $(window).bind("codeUpdate", fn);
-        }else{
-            return update(window, {code: true})
+        } else {
+            //exception?
         }
     };
 
-    $.fn.assetUpdate = function(fn) {
-        if(arguments.length > 0){
-            return $(window).bind("assetUpdate", fn);
-        }else{
-            return update(window, {css: true, img: true})
+    $.fn.assetsUpdate = function (fn) {
+        if (arguments.length > 0) {
+            return $(window).bind("assetsUpdate", fn);
+        } else {
+            return update(window);
         }
     };
 
-    $.fn.cssUpdate = function(fn) {
-        if(arguments.length > 0){
+    $.fn.cssUpdate = function (fn) {
+        if (arguments.length > 0) {
             return $(window).bind("cssUpdate", fn);
-        }else{
-            return update(window, {css: true})
+        } else {
+            return update(window);
         }
     };
 
-})( jQuery );
+    $.fn.imageUpdate = function (fn) {
+        if (arguments.length > 0) {
+            return $(this).bind("imageUpdate", fn);
+        } else {
+            $(this).attr("src", $(this).attr("src" + "?" + (new Date().getTime())))
+        }
+    };
+
+})(jQuery);
