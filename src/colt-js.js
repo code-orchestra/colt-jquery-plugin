@@ -1,95 +1,123 @@
 (function ($) {
 
     var assetsUpdated = [];
-    var cssUpdated = [];
     var functionsUpdated = [];
-
-    if (LiveCodingUtil) {
-        LiveCodingUtil.addListener("onLiveCodeUpdate", function (e) {
-            var isCode;
-            var isImg;
-            var isCss;
-            var fnUpdated;
-
-            assetsUpdated = [];// todo: наполнить
-            cssUpdated = [];// todo: наполнить
-            functionsUpdated = [];// todo: наполнить
-
-            $(window).trigger("liveUpdate");
-
-            if (isCode) {
-                $(window).trigger("codeUpdate");
-                for (var i = 0; i < fnListeners.length; i++) {
-                    if (fnListeners[i][0] == fnUpdated) {
-                        fnListeners[i][1].call(fnUpdated);
-                    }
-                }
-            } else {
-                $(window).trigger("assetsUpdate")// assets code
-                if (isImg) {
-                    $(window).trigger("imageUpdate");
-                    $(window).trigger("cssUpdate");
-                }
-            }
-        });
-    }
-
-    var update = function (domain) {
-        if (assetsUpdated.length) {
-            $("img").each(function () {
-                var src = $(this).attr("src");
-                if (assetsUpdated.indexOf(src) != -1) {
-                    $(this).assetsUpdate();
+	
+	var collectUpdatedAssets = function (selector, attrName) {
+		var result = [];
+        if (assetsUpdated.length > 0) {
+            $(selector).each(function () {
+                var src = $(this).attr(attrName).split("?")[0];
+				var updated = false;
+				for (var i = 0; i < assetsUpdated.length; i++) {
+					// src is actual content of src attribute
+					// assetsUpdated[i] is image path rel. to project root
+					// this check will break if there are "../" in the src
+					if (assetsUpdated[i].indexOf(src) > -1) {
+						updated = true; break;
+					}
+				}
+                if (updated) {
+                    result.push ( $(this) );
                 }
             });
         }
-        if (cssUpdated.length) {
-            for(var i=0; i< cssUpdated.length;i++){
-                $("<link/>", {
-                    rel: "stylesheet",
-                    type: "text/css",
-                    href: cssUpdated[i]
-                }).appendTo("head");
-            }
-        }
-        return domain;
+		return result;
+	};
+
+    if (top["LiveCodeRegistry"] != undefined) {
+        top.LiveCodeRegistry.getInstance().addEventListener ("codeUpdate", function (e) {
+        	// e.methods -> changed methods references
+			functionsUpdated = e.methods;
+
+			$(window).trigger("liveUpdate");
+            $(window).trigger("codeUpdate");
+			
+            // разослать событие для отдельных функций
+			for (var i = 0; i < fnListeners.length; i++) {
+				var jqobj = fnListeners[i];
+				for (var j = 0; j < functionsUpdated.length; j++) {
+					var method = functionsUpdated[j];
+					if (method == jqobj.selector) {
+						jqobj.trigger("codeUpdate");
+					}
+				}
+			}
+        });
+
+        top.LiveCodeRegistry.getInstance().addEventListener ("assetUpdate", function (e) {
+        	// e.sources -> relative path to assets
+			assetsUpdated = e.sources;
+
+			console.log("jQ plugin: received assetUpdate", e);
+			
+			$(window).trigger("liveUpdate");
+			$(window).trigger("assetUpdate");
+
+			collectUpdatedAssets("img", "src").forEach (function (image) {
+//				image.trigger("liveUpdate");
+//				image.trigger("assetUpdate");
+				
+				image.trigger("imageUpdate");
+			});
+
+			collectUpdatedAssets("link", "href").forEach (function (style) {
+//				style.trigger("liveUpdate");
+//				style.trigger("assetUpdate");
+				
+				style.trigger("cssUpdate");
+			});
+        });
     }
 
     var fnListeners = [];
 
     $.fn.liveUpdate = function (fn) {
         if (arguments.length > 0) {
-            return $(window).bind("liveUpdate", fn);
+            return $(this).bind("liveUpdate", fn);
         } else {
-            return update(window);
+			this.codeUpdate();
+            this.cssUpdate();
+			this.imageUpdate();
+			return this;
         }
     };
 
     $.fn.codeUpdate = function (fn) {
         if (arguments.length > 0) {
-            if (typeof this == "function") {
-                fnListeners.push([this, fn])
+            if (typeof this.selector == "function") {
+                fnListeners.push(this);
+				top.LiveCodeRegistry.getInstance().trackMethod(this.selector);
             }
-            return $(window).bind("codeUpdate", fn);
+            return $(this).bind("codeUpdate", fn);
         } else {
-            //exception?
+            // todo: nothing?
+			return this;
         }
-        return this
     };
 
-    $.fn.assetsUpdate = function (fn) {
+    $.fn.assetUpdate = function (fn) {
         if (arguments.length > 0) {
-            return $(window).bind("assetsUpdate", fn);
+            return $(this).bind("assetUpdate", fn);
         } else {
-            return update(window);
+            this.cssUpdate();
+			this.imageUpdate();
+			return this;
         }
     };
 
     $.fn.cssUpdate = function (fn) {
         if (arguments.length > 0) {
-            return $(window).bind("cssUpdate", fn);
+            return $(this).bind("cssUpdate", fn);
         } else {
-            return update(window);
+/*
+                $("<link/>", {
+                    rel: "stylesheet",
+                    type: "text/css",
+                    href: cssUpdated[i]
+                }).appendTo("head");
+*/
+			// todo: find and update all styles in selection
         }
     };
 
@@ -97,7 +125,7 @@
         if (arguments.length > 0) {
             return $(this).bind("imageUpdate", fn);
         } else {
-            return $(this).attr("src", $(this).attr("src" + "?" + (new Date().getTime())))
+			// todo: find and update all images in selection
         }
     };
 
