@@ -24,6 +24,12 @@
         }
 		return result;
 	};
+	
+	var updateUrlsInSelection = function (jqobj, selector, attrName) {
+        jqobj.find(selector).each(function () {
+            $(this).attr(attrName, $(this).attr(attrName).split("?")[0] + "?d=" + (new Date()).valueOf() );
+		});
+	};
 
     if (top["LiveCodeRegistry"] != undefined) {
         top.LiveCodeRegistry.getInstance().addEventListener ("codeUpdate", function (e) {
@@ -49,8 +55,6 @@
         	// e.sources -> relative path to assets
 			assetsUpdated = e.sources;
 
-			console.log("jQ plugin: received assetUpdate", e);
-			
 			$(window).trigger("liveUpdate");
 			$(window).trigger("assetUpdate");
 
@@ -77,8 +81,7 @@
             return $(this).bind("liveUpdate", fn);
         } else {
 			this.codeUpdate();
-            this.cssUpdate();
-			this.imageUpdate();
+            this.assetUpdate();
 			return this;
         }
     };
@@ -117,7 +120,9 @@
                     href: cssUpdated[i]
                 }).appendTo("head");
 */
-			// todo: find and update all styles in selection
+			// find and update all styles in selection
+			updateUrlsInSelection(this, "link", "href");
+			return this;
         }
     };
 
@@ -125,7 +130,9 @@
         if (arguments.length > 0) {
             return $(this).bind("imageUpdate", fn);
         } else {
-			// todo: find and update all images in selection
+			// find and update all images in selection
+			updateUrlsInSelection(this, "img", "src");
+			return this;
         }
     };
 
