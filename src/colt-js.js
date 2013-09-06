@@ -26,7 +26,7 @@
 	};
 	
 	var updateUrlsInSelection = function (jqobj, selector, attrName) {
-        jqobj.find(selector).each(function () {
+        jqobj.filter(selector).each(function () {
             $(this).attr(attrName, $(this).attr(attrName).split("?")[0] + "?d=" + (new Date()).valueOf() );
 		});
 	};
