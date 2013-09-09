@@ -36,7 +36,7 @@
         	// e.methods -> changed methods references
 			functionsUpdated = e.methods;
 
-			$(window).trigger("liveUpdate");
+			$(window).trigger("liveUpdate", [[e.source]]);
             $(window).trigger("codeUpdate");
 			
             // разослать событие для отдельных функций
@@ -55,8 +55,8 @@
         	// e.sources -> relative path to assets
 			assetsUpdated = e.sources;
 
-			$(window).trigger("liveUpdate");
-			$(window).trigger("assetUpdate");
+			$(window).trigger("liveUpdate", [e.sources]);
+			$(window).trigger("assetUpdate", [e.sources]);
 
 			collectUpdatedAssets("img", "src").forEach (function (image) {
 //				image.trigger("liveUpdate");
