@@ -42,7 +42,7 @@ $("#myImage").imageUpdate(function (e) {
 **$({selector:someFunction}).codeUpdate(handler)** - Subscribes to code changes in specified function.
 
 ```javascript
-$({selector:myFunction}).liveUpdate(function (e) {
+$({selector:myFunction}).codeUpdate(function (e) {
 	// myFunction implementation has changed - do something
 	myFunction (someParameter);
 });
