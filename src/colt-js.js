@@ -37,18 +37,21 @@
 			functionsUpdated = e.methods;
 
 			$(window).trigger("liveUpdate", [[e.source]]);
-            $(window).trigger("codeUpdate");
 			
             // разослать событие для отдельных функций
+			var funcs = [];
 			for (var i = 0; i < fnListeners.length; i++) {
 				var jqobj = fnListeners[i];
 				for (var j = 0; j < functionsUpdated.length; j++) {
 					var method = functionsUpdated[j];
 					if (method == jqobj.selector) {
 						jqobj.trigger("codeUpdate");
+						funcs.push (method);
 					}
 				}
 			}
+
+            $(window).trigger("codeUpdate", [funcs]);
         });
 
         top.LiveCodeRegistry.getInstance().addEventListener ("assetUpdate", function (e) {
@@ -58,18 +61,19 @@
 			$(window).trigger("liveUpdate", [e.sources]);
 			$(window).trigger("assetUpdate", [e.sources]);
 
-			collectUpdatedAssets("img", "src").forEach (function (image) {
+			var expiredImages = collectUpdatedAssets("img", "src");
+			expiredImages.forEach (function (image) {
 //				image.trigger("liveUpdate");
 //				image.trigger("assetUpdate");
 				
-				image.trigger("imageUpdate");
+				image.trigger("imageUpdate", [expiredImages]);
 			});
 
 			collectUpdatedAssets("link", "href").forEach (function (style) {
 //				style.trigger("liveUpdate");
 //				style.trigger("assetUpdate");
 				
-				style.trigger("cssUpdate");
+				style.trigger("cssUpdate", [assetsUpdated.filter (function (s) { return s.toLowerCase().substr(-3) == "css"; })] );
 			});
         });
     }
