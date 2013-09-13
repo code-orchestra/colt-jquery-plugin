@@ -14,7 +14,7 @@ $(window).liveUpdate(function (e, files) {
 });
 ```
 
-**$(window).codeUpdate(function(e, fncs) { ... })** - Subscribes to all code updates. Array `fncs` contains all the functions that were subscribed to individually (see below).
+**$(window).codeUpdate(function(e, fncs) { ... })** - Subscribes to all code updates. Array `fncs` contains all the changed functions that were subscribed to individually (see below).
 
 ```javascript
 $(window).codeUpdate(function(e, fncs){
@@ -68,6 +68,6 @@ $(window).cssUpdate(function (e, stylesFiles) {
 $(window).cssUpdate();
 ```
 
-**$(selector).assetUpdate(function (e, files) { ... })** - Subscribes to any file updates in the project.
+**$(selector).filesUpdate(function (e, files) { ... })** - Subscribes to any file updates in the project.
 
-**$(selector).assetUpdate()** - Calls both cssUpdate() and imageUpdate().
+**$(selector).filesUpdate()** - Calls both cssUpdate() and imageUpdate().

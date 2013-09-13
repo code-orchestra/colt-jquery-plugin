@@ -59,19 +59,19 @@
 			assetsUpdated = e.sources;
 
 			$(window).trigger("liveUpdate", [e.sources]);
-			$(window).trigger("assetUpdate", [e.sources]);
+			$(window).trigger("filesUpdate", [e.sources]);
 
 			var expiredImages = collectUpdatedAssets("img", "src");
 			expiredImages.forEach (function (image) {
 //				image.trigger("liveUpdate");
-//				image.trigger("assetUpdate");
+//				image.trigger("filesUpdate");
 				
 				image.trigger("imageUpdate", [expiredImages]);
 			});
 
 			collectUpdatedAssets("link", "href").forEach (function (style) {
 //				style.trigger("liveUpdate");
-//				style.trigger("assetUpdate");
+//				style.trigger("filesUpdate");
 				
 				style.trigger("cssUpdate", [assetsUpdated.filter (function (s) { return s.toLowerCase().substr(-3) == "css"; })] );
 			});
@@ -85,7 +85,7 @@
             return $(this).bind("liveUpdate", fn);
         } else {
 			this.codeUpdate();
-            this.assetUpdate();
+            this.filesUpdate();
 			return this;
         }
     };
@@ -103,9 +103,9 @@
         }
     };
 
-    $.fn.assetUpdate = function (fn) {
+    $.fn.filesUpdate = function (fn) {
         if (arguments.length > 0) {
-            return $(this).bind("assetUpdate", fn);
+            return $(this).bind("filesUpdate", fn);
         } else {
             this.cssUpdate();
 			this.imageUpdate();
