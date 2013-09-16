@@ -1,4 +1,5 @@
 (function ($) {
+    if (!$) return;
 
     var assetsUpdated = [];
     var functionsUpdated = [];
@@ -140,4 +141,4 @@
         }
     };
 
-})(jQuery);
+})(this["jQuery"]);
